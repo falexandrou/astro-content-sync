@@ -1,0 +1,18 @@
+{
+  "name": "astro-content-sync",
+  "version": "1.0.0",
+  "description": "Syncs Obsidian directories with Astro's content directories",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Fotis Alexandrou <hello@falexandrou.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "chokidar": "^4.0.3"
+  }
+}
