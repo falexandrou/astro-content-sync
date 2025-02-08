@@ -1,60 +1,80 @@
-import * as fs from "node:fs";
 import chokidar, { type FSWatcher } from "chokidar";
+import { copyDirectory, copyFile, removeDirectory, removeFile } from "./utils";
+import { getSyncablesFromInputs } from "./syncable";
+import type { AstroOptions, Syncable, SyncablesMap } from "./types";
 
 declare global {
   var watcher: FSWatcher;
+  namespace NodeJS {
+    interface ProcessEnv {
+      ASTRO_CONTENT_DIR?: string;
+      ASTRO_CONTENT_IGNORED?: string;
+    }
+  }
 }
 
-export type Syncable = {
-  /**
-   * @description The path to the directory that will be watched for changes
-   */
-  sourcePath: string;
-
-  /**
-   * @description The path to the directory that the sourcePath will be synced to
-   */
-  targetPath: string;
-
-  /**
-   * @description List of glob patterns to be ignored by the integration
-   */
-  ignoredFiles?: string[];
-
-  /**
-   * @description Function to transform the path of the file before syncing
-   * @param path The path of the file
-   * @returns The transformed path
-   */
-  transform?: (path: string) => string;
-};
-
-export const createAstroContentSyncIntegration = (...inputs: Syncable[]) => {
+export const createAstroContentSyncIntegration = (...inputs: (Syncable | string)[]) => {
   return {
     name: "astro-content-sync",
     hooks: {
-      "astro:config:setup": ({ command }) => {
+      "astro:config:setup": ({ command, logger, config }) => {
         if (command !== "dev") {
-          console.warn("AstroContentSync is only available in in dev mode");
+          logger.warn("AstroContentSync is only available in in dev mode");
           return;
         }
 
-        const validDirectories = inputs.filter((dir) => {
-          const { sourcePath } = dir;
-          const exists = fs.existsSync(sourcePath);
+        if (global.watcher) {
+          logger.info("Watcher already initialized");
+          return;
+        }
 
-          if (!exists) {
-            console.error(`Directory ${sourcePath} does not exist`);
-          }
+        const options: AstroOptions = {
+          srcDir: config.srcDir.patname,
+          publicDir: config.publicDir.pathname,
+        };
 
-          return exists;
-        });
+        const syncables = getSyncablesFromInputs(inputs, options, logger);
+        const watched: Map<string, Syncable> = new Map(syncables.map((dir) => [dir.source, dir]));
+        const watchedSources = Array.from(watched.keys());
 
-        const watched: Map<string, Syncable> = new Map(
-          validDirectories.map((dir) => [dir.sourcePath, dir]),
+        const isIgnored = (path: string) => (
+          syncables.some((s) => (
+            path.startsWith(s.source) && s.ignored?.some((i) => path.match(i))
+          ))
         );
 
-        globalThis.watcher = chokidar.watch(Object.keys(watched));
+        const withSyncable = (path: string, callback: (syncable: Syncable) => void) => {
+          const syncable = syncables.find((s) => path.startsWith(s.source));
+
+          if (!syncable) {
+            logger.warn(`Path ${path} is not watched, ignoring...`);
+            return;
+          }
+
+          return callback(syncable);
+        }
+
+        globalThis.watcher = chokidar.watch(watchedSources, {
+          ignored: (path) => {
+            if (isIgnored(path)) {
+              logger.info(`Path ${path} is ignored`);
+              return true;
+            }
+            return false;
+          },
+        });
+
+        const watcher = globalThis.watcher;
+        watcher.on('add', (path) => withSyncable(path, (syncable) => copyFile(path, syncable, logger)));
+        watcher.on('change', (path) => withSyncable(path, (syncable) => copyFile(path, syncable, logger)));
+        watcher.on('unlink', (path) => withSyncable(path, (syncable) => removeFile(path, syncable, logger)));
+
+        watcher.on('addDir', (path) => withSyncable(path, (syncable) => copyDirectory(path, syncable, logger)));
+        watcher.on('unlinkDir', (path) => withSyncable(path, (syncable) => removeDirectory(path, syncable, logger)));
+
+        logger.warn(
+          `Watching the following for content changes...\n${watchedSources.map(p => `  ${p}`).join("\n")}\n`,
+        );
       },
     },
   };

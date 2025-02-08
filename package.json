@@ -8,11 +8,25 @@
   },
   "author": "Fotis Alexandrou <hello@falexandrou.com>",
   "license": "ISC",
+  "exports": {
+    ".": {
+      "types": "./src/types.ts",
+      "import": {
+        "development": "./src/index.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "development": "./src/index.ts",
+        "default": "./dist/cjs/index.js"
+      }
+    }
+  },
   "devDependencies": {
     "@types/node": "^22.10.7",
     "typescript": "^5.7.3"
   },
   "dependencies": {
-    "chokidar": "^4.0.3"
+    "chokidar": "^4.0.3",
+    "mime": "^4.0.6"
   }
 }
