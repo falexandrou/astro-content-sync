@@ -1,8 +1,8 @@
-import chokidar, { type FSWatcher } from "chokidar";
-import { getSyncablesFromInputs, SyncableFile } from "./syncable";
-import { getLinkedFilesInMarkdown, isMarkdown } from "./markdown";
-import { getFilesInDirectory } from "./filesystem";
-import type { AstroOptions, Syncable } from "./types";
+import chokidar, { type FSWatcher } from 'chokidar';
+import { getLinkedSyncable, getSyncablesFromInputs, SyncableFile } from './syncable';
+import { getLinkedFilesInMarkdown, isMarkdown } from './markdown';
+import { getFilesInDirectory } from './filesystem';
+import type { AstroOptions, Syncable } from './types';
 
 declare global {
   var watcher: FSWatcher;
@@ -16,16 +16,16 @@ declare global {
 
 export const createAstroContentSyncIntegration = (...inputs: (Syncable | string)[]) => {
   return {
-    name: "astro-content-sync",
+    name: 'astro-content-sync',
     hooks: {
-      "astro:config:setup": ({ command, logger, config }) => {
-        if (command !== "dev") {
-          logger.warn("AstroContentSync is only available in in dev mode");
+      'astro:config:setup': ({ command, logger, config }) => {
+        if (command !== 'dev') {
+          logger.warn('AstroContentSync is only available in in dev mode');
           return;
         }
 
         if (global.watcher) {
-          logger.info("Watcher already initialized");
+          logger.info('Watcher already initialized');
           return;
         }
 
@@ -40,9 +40,9 @@ export const createAstroContentSyncIntegration = (...inputs: (Syncable | string)
 
         globalThis.watcher = chokidar.watch(watchedSources, {
           ignored: (path) => {
-            const isIgnored = syncables.some((s) => (
-              path.startsWith(s.source) && s.ignored?.some((i) => path.match(i))
-            ));
+            const isIgnored = syncables.some(
+              (s) => path.startsWith(s.source) && s.ignored?.some((i) => path.match(i)),
+            );
 
             if (isIgnored) {
               logger.info(`Path ${path} is ignored`);
@@ -56,24 +56,26 @@ export const createAstroContentSyncIntegration = (...inputs: (Syncable | string)
         const watcher = globalThis.watcher;
 
         const getSyncableFilesForFilePath = (path: string): SyncableFile[] => {
-          const syncable = syncables.find((s) => path.startsWith(s.source));
+          const parentSyncable = syncables.find((s) => path.startsWith(s.source));
 
-          if (!syncable) {
+          if (!parentSyncable) {
             return [];
           }
 
           const syncableFiles: SyncableFile[] = [];
 
           // Get the SyncableFile for the path
-          syncableFiles.push(new SyncableFile(path, syncable.source, syncable.target, logger));
+          syncableFiles.push(new SyncableFile(path, parentSyncable.source, parentSyncable.target, logger));
 
           // Get the SyncableFiles for files linked in the content of the path
           if (isMarkdown(path)) {
-            getLinkedFilesInMarkdown(path).forEach((linkedFile) => (
+            const linkedFiles = getLinkedFilesInMarkdown(path);
+
+            for (const linked of linkedFiles) {
               syncableFiles.push(
-                new SyncableFile(linkedFile, syncable.source, syncable.target, logger),
-              )
-            ));
+                getLinkedSyncable(linked, parentSyncable, options),
+              );
+            }
           }
 
           return syncableFiles;
@@ -87,22 +89,29 @@ export const createAstroContentSyncIntegration = (...inputs: (Syncable | string)
           }
 
           // Get the SyncableFiles for the directory
-          return syncable.mimeTypes.map(
-            mimeType => getFilesInDirectory(directory, mimeType).map(
-              (file) => new SyncableFile(file, syncable.source, syncable.target, logger),
-            )
-          ).flat();
+          return getFilesInDirectory(directory, path => isMarkdown(path))
+            .flatMap((file) => getSyncableFilesForFilePath(file));
         };
 
-        watcher.on('add', (path) => getSyncableFilesForFilePath(path).map((syncableFile) => syncableFile.copy()));
-        watcher.on('change', (path) => getSyncableFilesForFilePath(path).forEach((syncableFile) => syncableFile.copy()));
-        watcher.on('unlink', (path) => getSyncableFilesForFilePath(path).forEach((syncableFile) => syncableFile.delete()));
+        watcher.on('add', (path) =>
+          getSyncableFilesForFilePath(path).map((syncableFile) => syncableFile.copy()),
+        );
+        watcher.on('change', (path) =>
+          getSyncableFilesForFilePath(path).forEach((syncableFile) => syncableFile.copy()),
+        );
+        watcher.on('unlink', (path) =>
+          getSyncableFilesForFilePath(path).forEach((syncableFile) => syncableFile.delete()),
+        );
 
-        watcher.on('addDir', (path) => getSyncableFilesForDirectory(path).forEach((syncableFile) => syncableFile.copy()));
-        watcher.on('unlinkDir', (path) => getSyncableFilesForDirectory(path).forEach((syncableFile) => syncableFile.delete()));
+        watcher.on('addDir', (path) =>
+          getSyncableFilesForDirectory(path).forEach((syncableFile) => syncableFile.copy()),
+        );
+        watcher.on('unlinkDir', (path) =>
+          getSyncableFilesForDirectory(path).forEach((syncableFile) => syncableFile.delete()),
+        );
 
         logger.warn(
-          `Watching the following for content changes...\n${watchedSources.map(p => `  ${p}`).join("\n")}\n`,
+          `Watching the following for content changes...\n${watchedSources.map((p) => `  ${p}`).join('\n')}\n`,
         );
       },
     },

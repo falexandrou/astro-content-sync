@@ -2,13 +2,13 @@ import { existsSync } from 'node:fs';
 import { join as joinPath } from 'node:path';
 import { copyFile, removeFile } from './filesystem';
 import type { AstroOptions, Syncable } from "./types";
+import { isMarkdown } from './markdown';
 
 export const getNormalizedSyncable = (input: Syncable | string, defaults: AstroOptions): Syncable => {
   let syncable: Syncable = {
     source: '',
     target: '',
     ignored: [],
-    mimeTypes: ['text/markdown'],
   };
 
   if (typeof input === 'string') {
@@ -113,3 +113,11 @@ export class SyncableFile {
     this.logger.info(`Deleted ${this.targetFile}`);
   }
 }
+
+export const getLinkedSyncable = (fileName: string, parent: Syncable, options: AstroOptions) => {
+  const targetDir = isMarkdown(fileName) ? parent.target : options.publicDir;
+  const relativePath = fileName.replace(parent.source, '');
+
+  const targetFile = joinPath(targetDir, relativePath);
+  return new SyncableFile(fileName, parent.source, targetFile);
+};

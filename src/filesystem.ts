@@ -1,6 +1,5 @@
-import mime from 'mime';
 import { statSync, mkdirSync, readdirSync, copyFileSync, unlinkSync } from 'node:fs';
-import { extname, join } from 'node:path';
+import { join } from 'node:path';
 import { dirname } from 'node:path/win32';
 
 export const createDirectoryIfNotExists = (destination: string) => {
@@ -17,8 +16,7 @@ export const createDirectoryIfNotExists = (destination: string) => {
   return destination;
 };
 
-export const getFilesInDirectory = (source: string, mimeType: string): string[] => {
-  const extensions = mime.getAllExtensions(mimeType)
+export const getFilesInDirectory = (source: string, matcher: (name: string) => boolean): string[] => {
   const matchingFiles = [];
 
   // get the files in directory with the specified extension, recursivel
@@ -26,11 +24,10 @@ export const getFilesInDirectory = (source: string, mimeType: string): string[] 
 
   for (const dirent of dirents) {
     const filePath = join(source, dirent.name);
-    const fileExtension = extname(filePath).slice(1);
 
     if (dirent.isDirectory()) {
-      matchingFiles.push(...getFilesInDirectory(filePath, mimeType));
-    } else if (extensions.has(fileExtension)) {
+      matchingFiles.push(...getFilesInDirectory(filePath, matcher));
+    } else if (matcher(filePath)) {
       matchingFiles.push(filePath);
     }
   }
