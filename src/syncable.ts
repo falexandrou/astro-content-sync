@@ -1,9 +1,15 @@
 import { existsSync } from 'node:fs';
 import { join as joinPath } from 'node:path';
+import { copyFile, removeFile } from './filesystem';
 import type { AstroOptions, Syncable } from "./types";
 
 export const getNormalizedSyncable = (input: Syncable | string, defaults: AstroOptions): Syncable => {
-  let syncable: Syncable = { source: '', target: '', ignored: [] };
+  let syncable: Syncable = {
+    source: '',
+    target: '',
+    ignored: [],
+    mimeTypes: ['text/markdown'],
+  };
 
   if (typeof input === 'string') {
     const [src, target] = input.split(':');
@@ -54,3 +60,56 @@ export const getSyncablesFromInputs = (inputs: (Syncable | string)[], options: A
     return exists;
   });
 };
+
+export class SyncableFile {
+  /**
+    * @description The path to the source file
+   */
+  sourceFile: string;
+
+  /**
+   * @description The path to the target file
+   */
+  targetFile: string;
+
+  /**
+   * @description The logger instance
+   */
+  private logger: Console;
+
+  /**
+   * @description The path to the directory that the source file is in
+   */
+  private targetDir: string;
+
+  constructor(fileName: string, sourceDir: string, targetDir: string, logger: Console = console) {
+    this.sourceFile = fileName;
+    this.targetDir = targetDir;
+
+    const relativeFileName = fileName.replace(sourceDir, '');
+    this.targetFile = joinPath(targetDir, relativeFileName);
+
+    this.logger = logger;
+  }
+
+  /**
+   * @description Copy the file to the target directory
+   */
+  copy() {
+    try {
+      copyFile(this.sourceFile, this.targetFile);
+      this.logger.info(`Copied ${this.sourceFile} into ${this.targetDir}`);
+    } catch (err) {
+      this.logger.error(`Failed to copy ${this.sourceFile} to ${this.targetFile}`);
+      this.logger.error(err);
+    }
+  }
+
+  /**
+   * @description Delete the file from the target directory
+   */
+  delete() {
+    removeFile(this.targetFile);
+    this.logger.info(`Deleted ${this.targetFile}`);
+  }
+}

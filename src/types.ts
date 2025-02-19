@@ -32,6 +32,9 @@ export type Syncable = {
    * @returns The transformed path
    */
   transform?: (path: string) => string;
-};
 
-export type SyncablesMap = Map<string, Syncable>;
+  /**
+   * @description List of mime types to be synced
+   */
+  mimeTypes?: string[];
+};
