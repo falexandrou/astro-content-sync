@@ -1,11 +1,11 @@
 import fs from 'node:fs';
 import { astroOptions } from "./fixtures";
 import {
-  getSyncablesFromInputs,
   SOURCE_PATH_EMPTY_MESSAGE,
   DIRECTORY_NOT_FOUND_ERROR,
   SyncableFile,
   getLinkedSyncable,
+  getSyncablesFromInputs,
 } from "../src/syncable";
 import * as fileUtil from '../src/filesystem';
 import type { Syncable } from '../src/types';

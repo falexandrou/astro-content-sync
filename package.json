@@ -4,20 +4,21 @@
   "description": "Syncs Obsidian directories with Astro's content directories",
   "main": "dist/index.js",
   "scripts": {
+    "build": "tsc",
     "test": "jest"
   },
   "author": "Fotis Alexandrou <hello@falexandrou.com>",
-  "license": "ISC",
+  "license": "MIT",
   "exports": {
     ".": {
       "types": "./src/types.ts",
       "import": {
         "development": "./src/index.ts",
-        "default": "./dist/esm/index.js"
+        "default": "./dist/index.js"
       },
       "require": {
         "development": "./src/index.ts",
-        "default": "./dist/cjs/index.js"
+        "default": "./dist/index.js"
       }
     }
   },

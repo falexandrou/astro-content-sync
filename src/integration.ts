@@ -98,20 +98,20 @@ export const createAstroContentSyncIntegration = (...inputs: (Syncable | string)
             .flatMap((file) => getSyncableFilesForFilePath(file));
         };
 
-        watcher.on('add', (path) =>
+        watcher.on('add', (path: string) =>
           getSyncableFilesForFilePath(path).map((syncableFile) => syncableFile.copy()),
         );
-        watcher.on('change', (path) =>
+        watcher.on('change', (path: string) =>
           getSyncableFilesForFilePath(path).forEach((syncableFile) => syncableFile.copy()),
         );
-        watcher.on('unlink', (path) =>
+        watcher.on('unlink', (path: string) =>
           getSyncableFilesForFilePath(path).forEach((syncableFile) => syncableFile.delete()),
         );
 
-        watcher.on('addDir', (path) =>
+        watcher.on('addDir', (path: string) =>
           getSyncableFilesForDirectory(path).forEach((syncableFile) => syncableFile.copy()),
         );
-        watcher.on('unlinkDir', (path) =>
+        watcher.on('unlinkDir', (path: string) =>
           getSyncableFilesForDirectory(path).forEach((syncableFile) => syncableFile.delete()),
         );
 

@@ -1,4 +1,14 @@
-## Usage
+## Astro Content Sync
+
+## The motivation
+Lately I've been enjoying the writing experience of [Obsidian](https://obsidian.md/) and I wanted to use it as my main writing tool.
+I also wanted to use Astro for my [personal website](https://www.falexandrou.com/), so I needed a way to sync the content from Obsidian to Astro.
+
+## Installation
+
+```bash
+npm install astro-content-sync
+```
 
 ### With Environment Variables
 
