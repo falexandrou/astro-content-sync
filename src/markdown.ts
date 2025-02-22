@@ -1,9 +1,19 @@
 import { readFileSync } from 'node:fs';
-import * as mime from 'mime';
 import { resolveFilePath } from './filesystem';
 
+const MARKDOWN_EXTENSIONS = [
+  '.md',
+  '.mkd',
+  '.mdwn',
+  '.mdown',
+  '.mdtxt',
+  '.mdtext',
+  '.markdown',
+  '.text',
+];
+
 export const isMarkdown = (pathName: string) => (
-  ['text/markdown', 'text/x-markdown', 'text/vnd.daringfireball.markdown'].includes(mime.getType(pathName))
+  MARKDOWN_EXTENSIONS.some((ext) => pathName.endsWith(ext))
 );
 
 const isRelativeLink = (path: string) => (
