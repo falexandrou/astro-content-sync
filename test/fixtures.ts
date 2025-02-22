@@ -11,3 +11,8 @@ export const astroOptions: AstroOptions = {
   publicDir: '/home/sites/astro/my-awesome-site/public',
   srcDir: '/home/sites/astro/my-awesome-site/src',
 };
+
+export const astroConfig = {
+  srcDir: { pathname: astroOptions.srcDir },
+  publicDir: { pathname: astroOptions.publicDir },
+};

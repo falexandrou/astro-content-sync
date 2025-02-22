@@ -1,7 +1,7 @@
 import chokidar, { type FSWatcher } from 'chokidar';
-import { getLinkedSyncable, getSyncablesFromInputs, SyncableFile } from './syncable';
 import { getLinkedFilesInMarkdown, isMarkdown } from './markdown';
 import { getFilesInDirectory } from './filesystem';
+import { getLinkedSyncable, getSyncablesFromInputs, SyncableFile, DEFAULT_ERROR_MESSAGE } from './syncable';
 import type { AstroOptions, Syncable } from './types';
 
 declare global {
@@ -20,7 +20,7 @@ export const createAstroContentSyncIntegration = (...inputs: (Syncable | string)
     hooks: {
       'astro:config:setup': ({ command, logger, config }) => {
         if (command !== 'dev') {
-          logger.warn('AstroContentSync is only available in in dev mode');
+          logger.warn('AstroContentSync is only available in dev mode');
           return;
         }
 
@@ -30,15 +30,22 @@ export const createAstroContentSyncIntegration = (...inputs: (Syncable | string)
         }
 
         const options: AstroOptions = {
-          srcDir: config.srcDir.patname,
+          srcDir: config.srcDir.pathname,
           publicDir: config.publicDir.pathname,
         };
 
         const syncables = getSyncablesFromInputs(inputs, options, logger);
+
+        if (!syncables.length) {
+          logger.error(DEFAULT_ERROR_MESSAGE);
+          return [];
+        }
+
+
         const watched: Map<string, Syncable> = new Map(syncables.map((dir) => [dir.source, dir]));
         const watchedSources = Array.from(watched.keys());
 
-        globalThis.watcher = chokidar.watch(watchedSources, {
+        const watcher = chokidar.watch(watchedSources, {
           ignored: (path) => {
             const isIgnored = syncables.some(
               (s) => path.startsWith(s.source) && s.ignored?.some((i) => path.match(i)),
@@ -52,8 +59,6 @@ export const createAstroContentSyncIntegration = (...inputs: (Syncable | string)
             return false;
           },
         });
-
-        const watcher = globalThis.watcher;
 
         const getSyncableFilesForFilePath = (path: string): SyncableFile[] => {
           const parentSyncable = syncables.find((s) => path.startsWith(s.source));
@@ -109,6 +114,8 @@ export const createAstroContentSyncIntegration = (...inputs: (Syncable | string)
         watcher.on('unlinkDir', (path) =>
           getSyncableFilesForDirectory(path).forEach((syncableFile) => syncableFile.delete()),
         );
+
+        globalThis.watcher = watcher;
 
         logger.warn(
           `Watching the following for content changes...\n${watchedSources.map((p) => `  ${p}`).join('\n')}\n`,

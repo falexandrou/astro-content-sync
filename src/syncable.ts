@@ -4,8 +4,8 @@ import { copyFile, removeFile } from './filesystem';
 import { isMarkdown } from './markdown';
 import type { AstroOptions, Syncable } from "./types";
 
-export const SOURCE_PATH_EMPTY_MESSAGE = 'Source path is empty';
 export const DEFAULT_ERROR_MESSAGE = 'Please provide at least one sync configuration or set the ASTRO_CONTENT_SYNC environment variable';
+export const SOURCE_PATH_EMPTY_MESSAGE = 'Source path is empty';
 export const DIRECTORY_NOT_FOUND_ERROR = 'Directory does not exist';
 
 export const getNormalizedSyncable = (input: Syncable | string, defaults: AstroOptions, logger: Console): Syncable => {
@@ -47,11 +47,6 @@ export const getSyncablesFromInputs = (inputs: (Syncable | string)[], options: A
     syncables.push(
       ...inputs.map((input) => getNormalizedSyncable(input, options, logger)).filter(Boolean),
     );
-  }
-
-  if (!syncables.length) {
-    logger.error(DEFAULT_ERROR_MESSAGE);
-    return [];
   }
 
   return syncables.filter((dir) => {

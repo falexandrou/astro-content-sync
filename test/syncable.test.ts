@@ -2,7 +2,6 @@ import fs from 'node:fs';
 import { astroOptions } from "./fixtures";
 import {
   getSyncablesFromInputs,
-  DEFAULT_ERROR_MESSAGE,
   SOURCE_PATH_EMPTY_MESSAGE,
   DIRECTORY_NOT_FOUND_ERROR,
   SyncableFile,
@@ -78,12 +77,6 @@ describe('getSyncablesFromInputs', () => {
       existsSpy.mockRestore();
     });
 
-    it('logs an error when the source is an empty string', () => {
-      process.env.ASTRO_CONTENT_SYNC = '';
-      getSyncablesFromInputs([], astroOptions, console);
-      expect(console.error).toHaveBeenCalledWith(DEFAULT_ERROR_MESSAGE);
-    });
-
     it('raises an error when the source is malformed', () => {
       process.env.ASTRO_CONTENT_SYNC = ':/home/test/some-target';
       const syncables = getSyncablesFromInputs([], astroOptions, console);
@@ -145,12 +138,6 @@ describe('getSyncablesFromInputs', () => {
 
     afterEach(() => {
       existsSpy.mockRestore();
-    });
-
-    it('returns an empty array and logs an error message when no input is passed and ENV var is not defined', () => {
-      const syncables = getSyncablesFromInputs([], astroOptions, console);
-      expect(syncables).toStrictEqual([]);
-      expect(console.error).toHaveBeenCalledWith(DEFAULT_ERROR_MESSAGE);
     });
 
     it('returns an empty array and logs an error message when the object is not configured propely', () => {
