@@ -4,6 +4,7 @@
   ],
   "compilerOptions": {
     "moduleResolution": "node",
+    "esModuleInterop": true,
     "target": "esnext",
     "outDir": "dist",
     "declaration": true,

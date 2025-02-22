@@ -1,6 +1,5 @@
 import { statSync, mkdirSync, readdirSync, copyFileSync, unlinkSync } from 'node:fs';
-import { join, normalize, resolve } from 'node:path';
-import { dirname } from 'node:path/win32';
+import { join, normalize, resolve, dirname } from 'node:path';
 
 export const createDirectoryIfNotExists = (destination: string) => {
   if (!destination) {
