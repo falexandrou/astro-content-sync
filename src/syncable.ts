@@ -1,10 +1,14 @@
 import { existsSync } from 'node:fs';
-import { join as joinPath } from 'node:path';
+import { join as joinPath, delimiter as PATH_DELIMITER } from 'node:path';
 import { copyFile, removeFile } from './filesystem';
-import type { AstroOptions, Syncable } from "./types";
 import { isMarkdown } from './markdown';
+import type { AstroOptions, Syncable } from "./types";
 
-export const getNormalizedSyncable = (input: Syncable | string, defaults: AstroOptions): Syncable => {
+export const SOURCE_PATH_EMPTY_MESSAGE = 'Source path is empty';
+export const DEFAULT_ERROR_MESSAGE = 'Please provide at least one sync configuration or set the ASTRO_CONTENT_SYNC environment variable';
+export const DIRECTORY_NOT_FOUND_ERROR = 'Directory does not exist';
+
+export const getNormalizedSyncable = (input: Syncable | string, defaults: AstroOptions, logger: Console): Syncable => {
   let syncable: Syncable = {
     source: '',
     target: '',
@@ -12,10 +16,11 @@ export const getNormalizedSyncable = (input: Syncable | string, defaults: AstroO
   };
 
   if (typeof input === 'string') {
-    const [src, target] = input.split(':');
+    const [src, target] = input.split(PATH_DELIMITER);
 
     if (!src) {
-      throw new Error('Source path is missing');
+      logger.error(SOURCE_PATH_EMPTY_MESSAGE);
+      return null;
     }
 
     return {
@@ -34,30 +39,32 @@ export const getNormalizedSyncable = (input: Syncable | string, defaults: AstroO
 export const getSyncablesFromInputs = (inputs: (Syncable | string)[], options: AstroOptions, logger: Console): Syncable[] => {
   const syncables: Syncable[] = [];
 
-  if (!inputs.length) {
-    logger.error("Please provide at least one sync configuration or set the ASTRO_CONTENT_SRC environment variable");
-    return [];
+  if (!inputs.length && process.env.ASTRO_CONTENT_SYNC) {
+    syncables.push(
+      ...process.env.ASTRO_CONTENT_SYNC.split(',').map((input) => getNormalizedSyncable(input, options, logger)).filter(Boolean),
+    );
+  } else if (inputs.length) {
+    syncables.push(
+      ...inputs.map((input) => getNormalizedSyncable(input, options, logger)).filter(Boolean),
+    );
   }
 
-  if (!inputs.length && process.env.ASTRO_CONTENT_SRC) {
-    syncables.push(
-      ...process.env.ASTRO_CONTENT_SRC.split(',').map((input) => getNormalizedSyncable(input, options)),
-    );
-  } else {
-    syncables.push(
-      ...inputs.map((input) => getNormalizedSyncable(input, options)),
-    );
+  if (!syncables.length) {
+    logger.error(DEFAULT_ERROR_MESSAGE);
+    return [];
   }
 
   return syncables.filter((dir) => {
     const { source: sourcePath } = dir;
     const exists = existsSync(sourcePath);
 
-    if (!exists) {
-      logger.error(`Directory ${sourcePath} does not exist`);
+    if (!sourcePath) {
+      logger.error(SOURCE_PATH_EMPTY_MESSAGE);
+    } else if (!exists) {
+      logger.error(DIRECTORY_NOT_FOUND_ERROR, sourcePath);
     }
 
-    return exists;
+    return sourcePath && exists;
   });
 };
 
