@@ -4,7 +4,7 @@
   "description": "Syncs Obsidian directories with Astro's content directories",
   "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "author": "Fotis Alexandrou <hello@falexandrou.com>",
   "license": "ISC",
@@ -22,7 +22,10 @@
     }
   },
   "devDependencies": {
+    "@types/jest": "^29.5.14",
     "@types/node": "^22.10.7",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
     "typescript": "^5.7.3"
   },
   "dependencies": {

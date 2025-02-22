@@ -1,5 +1,5 @@
-import mime from 'mime';
 import { readFileSync } from 'node:fs';
+import * as mime from 'mime';
 import { resolveFilePath } from './filesystem';
 
 export const isMarkdown = (pathName: string) => (

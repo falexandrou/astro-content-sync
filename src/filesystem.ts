@@ -1,5 +1,5 @@
 import { statSync, mkdirSync, readdirSync, copyFileSync, unlinkSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, normalize, resolve } from 'node:path';
 import { dirname } from 'node:path/win32';
 
 export const createDirectoryIfNotExists = (destination: string) => {
@@ -47,15 +47,15 @@ export const removeFile = async (file: string) => {
 
 export const resolveFilePath = (fileName: string) => {
   try {
-    const resolvedPath = join(fileName);
-    const stat = statSync(resolvedPath, { throwIfNoEntry: false });
+    const stat = statSync(fileName, { throwIfNoEntry: false });
 
     if (!stat?.isFile()) {
       return null;
     }
 
-    return resolvedPath;
-  } catch {
+    return normalize(resolve(fileName));
+  } catch (err) {
+    console.error(err);
     return null;
   }
 };
