@@ -75,6 +75,7 @@ export const createAstroContentSyncIntegration = (...inputs: (Syncable | string)
           // Get the SyncableFiles for files linked in the content of the path
           if (isMarkdown(path)) {
             const linkedFiles = getLinkedFilesInMarkdown(path);
+            console.log({ linkedFiles });
 
             for (const linked of linkedFiles) {
               syncableFiles.push(

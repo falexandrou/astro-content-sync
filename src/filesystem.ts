@@ -44,9 +44,9 @@ export const removeFile = async (file: string) => {
   unlinkSync(file);
 };
 
-export const resolveFilePath = (fileName: string) => {
+export const resolveFilePath = (fileName: string, baseDir = '') => {
   try {
-    const stat = statSync(fileName, { throwIfNoEntry: false });
+    const stat = statSync(join(baseDir, fileName), { throwIfNoEntry: false });
 
     if (!stat?.isFile()) {
       return null;

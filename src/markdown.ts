@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { dirname } from 'node:path';
 import { resolveFilePath } from './filesystem';
 
 const MARKDOWN_EXTENSIONS = [
@@ -22,10 +23,10 @@ const isRelativeLink = (path: string) => (
 
 export const getLinkedFilesInMarkdown = (source: string) => {
   const contents = readFileSync(source, 'utf-8');
+  const baseDir = dirname(source);
 
-  // Regular expressions for markdown links
-  const mdLinkRegex = /\[([^\]]*)\]\(([^)]+)\)/g;
-  const mdImageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+  // Regular expressions for markdown links & images
+  const mdLinkOrImageRegex = /!\[([^\]]*)\]\(([^)]+)(\s[^)]+)\)/g;
 
   // Regular expressions for HTML elements with links/sources
   const htmlRegex = /<(?:a|img|video|audio|source|iframe)\s+[^>]*(?:href|src)=["']([^"']+)["'][^>]*>/gi;
@@ -33,8 +34,7 @@ export const getLinkedFilesInMarkdown = (source: string) => {
   let match: RegExpExecArray | null = null;
   const links = new Set<string>();
   const matchers: [RegExp, number][] = [
-    [mdLinkRegex, 2],
-    [mdImageRegex, 2],
+    [mdLinkOrImageRegex, 2],
     [htmlRegex, 1],
   ];
 
@@ -47,6 +47,6 @@ export const getLinkedFilesInMarkdown = (source: string) => {
   }
 
   return Array.from(links)
-    .map((link) => resolveFilePath(link))
+    .map((link) => resolveFilePath(link, baseDir))
     .filter(Boolean);
 };
