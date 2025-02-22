@@ -73,7 +73,7 @@ export const createAstroContentSyncIntegration = (...inputs: (Syncable | string)
 
             for (const linked of linkedFiles) {
               syncableFiles.push(
-                getLinkedSyncable(linked, parentSyncable, options),
+                getLinkedSyncable(linked, parentSyncable, options, logger),
               );
             }
           }

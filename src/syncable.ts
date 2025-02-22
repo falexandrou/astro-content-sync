@@ -121,10 +121,7 @@ export class SyncableFile {
   }
 }
 
-export const getLinkedSyncable = (fileName: string, parent: Syncable, options: AstroOptions) => {
+export const getLinkedSyncable = (fileName: string, parent: Syncable, options: AstroOptions, logger: Console) => {
   const targetDir = isMarkdown(fileName) ? parent.target : options.publicDir;
-  const relativePath = fileName.replace(parent.source, '');
-
-  const targetFile = joinPath(targetDir, relativePath);
-  return new SyncableFile(fileName, parent.source, targetFile);
+  return new SyncableFile(fileName, parent.source, targetDir, logger);
 };

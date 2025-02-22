@@ -5,7 +5,53 @@ import {
   DEFAULT_ERROR_MESSAGE,
   SOURCE_PATH_EMPTY_MESSAGE,
   DIRECTORY_NOT_FOUND_ERROR,
+  SyncableFile,
+  getLinkedSyncable,
 } from "../src/syncable";
+import * as fileUtil from '../src/filesystem';
+import type { Syncable } from '../src/types';
+
+describe('SyncableFile', () => {
+  let consoleSpy: jest.SpyInstance;
+  let syncableFile: SyncableFile;
+  const sourceDir = '/home/test/some-path';
+  const targetDir = '/home/test/some-target';
+  const fileName = '/home/test/some-path/some-file.md';
+
+  beforeEach(() => {
+    syncableFile = new SyncableFile(fileName, sourceDir, targetDir, console);
+    consoleSpy = jest.spyOn(console, 'info').mockImplementation(jest.fn());
+  });
+
+  afterEach(() => {
+    consoleSpy.mockRestore();
+  });
+
+  it('creates a SyncableFile instance', () => {
+    expect(syncableFile).toBeInstanceOf(SyncableFile);
+    expect(syncableFile.sourceFile).toEqual(`${sourceDir}/some-file.md`);
+    expect(syncableFile.targetFile).toEqual(`${targetDir}/some-file.md`);
+  });
+
+  it('copies the file to the target', () => {
+    const copyFileMock = jest.spyOn(fileUtil, 'copyFile').mockImplementation(jest.fn());
+
+    syncableFile.copy();
+
+    expect(copyFileMock).toHaveBeenCalledWith(fileName, `${targetDir}/some-file.md`);
+    expect(consoleSpy).toHaveBeenCalledWith(`Copied ${fileName} into ${targetDir}`);
+    copyFileMock.mockRestore();
+  });
+
+  it('deletes the target file', () => {
+    const removeFileMock = jest.spyOn(fileUtil, 'removeFile').mockImplementation(jest.fn());
+    syncableFile.delete();
+
+    expect(removeFileMock).toHaveBeenCalledWith(`${targetDir}/some-file.md`);
+    expect(consoleSpy).toHaveBeenCalledWith(`Deleted ${targetDir}/some-file.md`);
+    removeFileMock.mockRestore();
+  })
+});
 
 describe('getSyncablesFromInputs', () => {
   let previousEnv: NodeJS.ProcessEnv;
@@ -161,4 +207,29 @@ describe('getSyncablesFromInputs', () => {
       expect(console.error).toHaveBeenCalledWith(SOURCE_PATH_EMPTY_MESSAGE);
     })
   });
+});
+
+describe('getLinkedSyncable', () => {
+  const parentSyncable: Syncable = {
+    source: '/home/test/some-path',
+    target: '/home/test/some-target',
+    ignored: [],
+  };
+
+  it('returns the parent syncable’s target dir for markdown files', () => {
+    const linked = '/home/test/some-path/some-file.md';
+    const syncableFile = getLinkedSyncable(linked, parentSyncable, astroOptions, console);
+    expect(syncableFile).toBeInstanceOf(SyncableFile);
+    expect(syncableFile.sourceFile).toEqual(linked);
+    expect(syncableFile.targetFile).toEqual(`${parentSyncable.target}/some-file.md`);
+  });
+
+  it('returns the astro public directory for non mardown files', () => {
+    const linked = '/home/test/some-path/some-file.jpg';
+    const syncableFile = getLinkedSyncable(linked, parentSyncable, astroOptions, console);
+
+    expect(syncableFile).toBeInstanceOf(SyncableFile);
+    expect(syncableFile.sourceFile).toEqual(linked);
+    expect(syncableFile.targetFile).toEqual(`${astroOptions.publicDir}/some-file.jpg`);
+  })
 });
