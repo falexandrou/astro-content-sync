@@ -1,5 +1,10 @@
 export type AstroOptions = {
   /**
+   * @description The path to Astro's root directory
+   */
+  rootDir: string;
+
+  /**
   * @description The path to Astro's src directory
   */
   srcDir: string;

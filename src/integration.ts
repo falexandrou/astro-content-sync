@@ -1,7 +1,8 @@
+import { join } from 'node:path';
 import chokidar, { type FSWatcher } from 'chokidar';
 import { getLinkedFilesInMarkdown, isMarkdown } from './markdown';
-import { getFilesInDirectory } from './filesystem';
-import { getLinkedSyncable, getSyncablesFromInputs, SyncableFile, DEFAULT_ERROR_MESSAGE } from './syncable';
+import { copyFile, getFilesInDirectory, removeFile, resolveFilePath } from './filesystem';
+import { getSyncablesFromInputs, DEFAULT_ERROR_MESSAGE } from './syncable';
 import type { AstroOptions, Syncable } from './types';
 
 declare global {
@@ -30,6 +31,7 @@ export const createAstroContentSyncIntegration = (...inputs: (Syncable | string)
         }
 
         const options: AstroOptions = {
+          rootDir: config.root.pathname,
           srcDir: config.srcDir.pathname,
           publicDir: config.publicDir.pathname,
         };
@@ -40,7 +42,6 @@ export const createAstroContentSyncIntegration = (...inputs: (Syncable | string)
           logger.error(DEFAULT_ERROR_MESSAGE);
           return [];
         }
-
 
         const watched: Map<string, Syncable> = new Map(syncables.map((dir) => [dir.source, dir]));
         const watchedSources = Array.from(watched.keys());
@@ -60,61 +61,54 @@ export const createAstroContentSyncIntegration = (...inputs: (Syncable | string)
           },
         });
 
-        const getSyncableFilesForFilePath = (path: string): SyncableFile[] => {
-          const parentSyncable = syncables.find((s) => path.startsWith(s.source));
+        const getTargetPath = (path: string, syncable: Syncable) => {
+          const relativePath = path.replace(syncable.source, '').replace(/^\/?(.*)\/?$/gi, '$1');
 
-          if (!parentSyncable) {
-            return [];
-          }
+          return isMarkdown(path)
+            ? join(syncable.target ?? options.rootDir, relativePath)
+            : join(options.publicDir, relativePath);
+        };
 
-          const syncableFiles: SyncableFile[] = [];
+        const handleFileUpdate = (path: string) => {
+          const syncable = syncables.find((s) => path.startsWith(s.source));
+          const targetPath = getTargetPath(path, syncable);
+          const linkUrls: string[] = [];
 
-          // Get the SyncableFile for the path
-          syncableFiles.push(new SyncableFile(path, parentSyncable.source, parentSyncable.target, logger));
-
-          // Get the SyncableFiles for files linked in the content of the path
           if (isMarkdown(path)) {
             const linkedFiles = getLinkedFilesInMarkdown(path);
-            console.log({ linkedFiles });
 
             for (const linked of linkedFiles) {
-              syncableFiles.push(
-                getLinkedSyncable(linked, parentSyncable, options, logger),
-              );
+              const targetLinked = getTargetPath(linked, syncable);
+
+              linkUrls.push(linked);
+              const sourcePath = resolveFilePath(linked, syncable.source);
+              copyFile(sourcePath, targetLinked);
             }
           }
 
-          return syncableFiles;
+          copyFile(path, targetPath, linkUrls);
+
+          logger.info(`Copied ${path} to ${targetPath}`);
         };
 
-        const getSyncableFilesForDirectory = (directory: string) => {
-          const syncable = syncables.find((s) => s.source.startsWith(directory));
+        const handleFileDeletion = (path: string) => {
+          const targetPath = getTargetPath(path, syncables.find((s) => path.startsWith(s.source)));
+          removeFile(targetPath);
+          logger.info(`Removed ${targetPath}`);
+        };
 
-          if (!syncable) {
-            return [];
+        const handleDirectoryUpdate = (directory: string) => {
+          const markdownFiles = getFilesInDirectory(directory, path => isMarkdown(path));
+
+          for (const path of markdownFiles) {
+            handleFileUpdate(path);
           }
-
-          // Get the SyncableFiles for the directory
-          return getFilesInDirectory(directory, path => isMarkdown(path))
-            .flatMap((file) => getSyncableFilesForFilePath(file));
         };
 
-        watcher.on('add', (path: string) =>
-          getSyncableFilesForFilePath(path).map((syncableFile) => syncableFile.copy()),
-        );
-        watcher.on('change', (path: string) =>
-          getSyncableFilesForFilePath(path).forEach((syncableFile) => syncableFile.copy()),
-        );
-        watcher.on('unlink', (path: string) =>
-          getSyncableFilesForFilePath(path).forEach((syncableFile) => syncableFile.delete()),
-        );
-
-        watcher.on('addDir', (path: string) =>
-          getSyncableFilesForDirectory(path).forEach((syncableFile) => syncableFile.copy()),
-        );
-        watcher.on('unlinkDir', (path: string) =>
-          getSyncableFilesForDirectory(path).forEach((syncableFile) => syncableFile.delete()),
-        );
+        watcher.on('add', handleFileUpdate);
+        watcher.on('change', handleFileUpdate);
+        watcher.on('unlink', handleFileDeletion);
+        watcher.on('addDir', handleDirectoryUpdate);
 
         globalThis.watcher = watcher;
 

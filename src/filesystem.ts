@@ -1,5 +1,10 @@
-import { statSync, mkdirSync, readdirSync, copyFileSync, unlinkSync } from 'node:fs';
-import { join, normalize, resolve, dirname } from 'node:path';
+import { join, dirname, isAbsolute } from 'node:path';
+import { statSync, mkdirSync, readdirSync, copyFileSync, unlinkSync, readFileSync, writeFileSync, link } from 'node:fs';
+import { isMarkdown, replaceLinkedFile } from './markdown';
+
+export const normalizePath = (path: string, base = '') => (
+  isAbsolute(path) ? path : join(base, path)
+);
 
 export const createDirectoryIfNotExists = (destination: string) => {
   if (!destination) {
@@ -34,10 +39,21 @@ export const getFilesInDirectory = (source: string, matcher: (name: string) => b
   return matchingFiles;
 };
 
-export const copyFile = async (source: string, destination: string) => {
+export const copyFile = async (source: string, destination: string, linkedFiles: string[] = []) => {
   const destinationDir = dirname(destination);
   createDirectoryIfNotExists(destinationDir);
-  copyFileSync(source, destination);
+
+  if (isMarkdown(source)) {
+    let content = readFileSync(source, 'utf-8').toString();
+
+    for (const linked of linkedFiles) {
+      content = replaceLinkedFile(content, linked);
+    }
+
+    writeFileSync(destination, content);
+  } else {
+    copyFileSync(source, destination);
+  }
 };
 
 export const removeFile = async (file: string) => {
@@ -52,7 +68,7 @@ export const resolveFilePath = (fileName: string, baseDir = '') => {
       return null;
     }
 
-    return normalize(resolve(fileName));
+    return normalizePath(fileName, baseDir);
   } catch (err) {
     console.error(err);
     return null;
