@@ -1,9 +1,8 @@
-import { join } from 'node:path';
 import chokidar, { type FSWatcher } from 'chokidar';
-import { getLinkedFilesInMarkdown, isMarkdown } from './markdown';
+import { getLinkedFilesInMarkdown, getTargetPath, getUrlForFile, isMarkdown } from './content';
 import { copyFile, getFilesInDirectory, removeFile, resolveFilePath } from './filesystem';
 import { getSyncablesFromInputs, DEFAULT_ERROR_MESSAGE } from './syncable';
-import type { AstroOptions, Syncable } from './types';
+import type { AstroOptions, ContentLink, Syncable } from './types';
 
 declare global {
   var watcher: FSWatcher;
@@ -61,26 +60,18 @@ export const createAstroContentSyncIntegration = (...inputs: (Syncable | string)
           },
         });
 
-        const getTargetPath = (path: string, syncable: Syncable) => {
-          const relativePath = path.replace(syncable.source, '').replace(/^\/?(.*)\/?$/gi, '$1');
-
-          return isMarkdown(path)
-            ? join(syncable.target ?? options.rootDir, relativePath)
-            : join(options.publicDir, relativePath);
-        };
-
         const handleFileUpdate = (path: string) => {
           const syncable = syncables.find((s) => path.startsWith(s.source));
-          const targetPath = getTargetPath(path, syncable);
-          const linkUrls: string[] = [];
+          const targetPath = getTargetPath(path, syncable, options);
+          const linkUrls: ContentLink[] = [];
 
           if (isMarkdown(path)) {
             const linkedFiles = getLinkedFilesInMarkdown(path);
 
             for (const linked of linkedFiles) {
-              const targetLinked = getTargetPath(linked, syncable);
+              const targetLinked = getTargetPath(linked, syncable, options);
 
-              linkUrls.push(linked);
+              linkUrls.push({ source: linked, url: getUrlForFile(linked, syncable, options) });
               const sourcePath = resolveFilePath(linked, syncable.source);
               copyFile(sourcePath, targetLinked);
             }
@@ -92,7 +83,8 @@ export const createAstroContentSyncIntegration = (...inputs: (Syncable | string)
         };
 
         const handleFileDeletion = (path: string) => {
-          const targetPath = getTargetPath(path, syncables.find((s) => path.startsWith(s.source)));
+          const targetPath = getTargetPath(path, syncables.find((s) => path.startsWith(s.source)), options);
+
           removeFile(targetPath);
           logger.info(`Removed ${targetPath}`);
         };

@@ -38,3 +38,15 @@ export type Syncable = {
    */
   transform?: (path: string) => string;
 };
+
+export type ContentLink = {
+  /**
+   * @description The path to the file
+   */
+  source: string;
+
+  /**
+   * @description The url for the file
+   */
+  url: string;
+};

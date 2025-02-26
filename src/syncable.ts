@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { join as joinPath, delimiter as PATH_DELIMITER } from 'node:path';
 import { normalizePath } from './filesystem';
 import type { AstroOptions, Syncable } from "./types";
-import { isMarkdown } from './markdown';
+import { isMarkdown } from './content';
 
 export const DEFAULT_ERROR_MESSAGE = 'Please provide at least one sync configuration or set the ASTRO_CONTENT_SYNC environment variable';
 export const SOURCE_PATH_EMPTY_MESSAGE = 'Source path is empty';

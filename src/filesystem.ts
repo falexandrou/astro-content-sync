@@ -1,6 +1,7 @@
 import { join, dirname, isAbsolute } from 'node:path';
-import { statSync, mkdirSync, readdirSync, copyFileSync, unlinkSync, readFileSync, writeFileSync, link } from 'node:fs';
-import { isMarkdown, replaceLinkedFile } from './markdown';
+import { statSync, mkdirSync, readdirSync, copyFileSync, unlinkSync, readFileSync, writeFileSync } from 'node:fs';
+import { isMarkdown, replaceContentLink } from './content';
+import type { ContentLink } from './types';
 
 export const normalizePath = (path: string, base = '') => (
   isAbsolute(path) ? path : join(base, path)
@@ -39,15 +40,15 @@ export const getFilesInDirectory = (source: string, matcher: (name: string) => b
   return matchingFiles;
 };
 
-export const copyFile = async (source: string, destination: string, linkedFiles: string[] = []) => {
+export const copyFile = async (source: string, destination: string, links: ContentLink[] = []) => {
   const destinationDir = dirname(destination);
   createDirectoryIfNotExists(destinationDir);
 
   if (isMarkdown(source)) {
     let content = readFileSync(source, 'utf-8').toString();
 
-    for (const linked of linkedFiles) {
-      content = replaceLinkedFile(content, linked);
+    for (const link of links) {
+      content = replaceContentLink(content, link);
     }
 
     writeFileSync(destination, content);

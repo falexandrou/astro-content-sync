@@ -1,4 +1,6 @@
 import { readFileSync } from 'node:fs';
+import type { AstroOptions, ContentLink, Syncable } from './types';
+import { join } from 'node:path';
 
 const MARKDOWN_EXTENSIONS = [
   '.md',
@@ -47,15 +49,27 @@ export const getLinkedFilesInMarkdown = (source: string) => {
   return Array.from(links).filter(Boolean);
 };
 
-export const getUrlForFile = (fileName: string) => {
-  const uri = isMarkdown(fileName)
-    ? fileName.replace(/\.md$/, '')
-    : fileName;
-
-  return `/${uri}`;
+export const replaceContentLink = (content: string, link: ContentLink) => {
+  const reg = new RegExp(`(${link.source}(\s[^\)]+)?)`, 'gi');
+  return content.replace(reg, link.url);
 };
 
-export const replaceLinkedFile = (content: string, relativePath: string) => {
-  const reg = new RegExp(`(${relativePath}(\s[^\)]+)?)`, 'gi');
-  return content.replace(reg, getUrlForFile(relativePath));
+export const getTargetPath = (path: string, syncable: Syncable, options: AstroOptions) => {
+  const relativePath = path.replace(syncable.source, '').replace(/^\/?(.*)\/?$/gi, '$1');
+
+  return isMarkdown(path)
+    ? join(syncable.target ?? options.rootDir, relativePath)
+    : join(options.publicDir, relativePath);
+};
+
+export const getUrlForFile = (relativePath: string, syncable: Syncable, options: AstroOptions): string => {
+  let relativeUri = relativePath;
+
+  if (isMarkdown(relativePath)) {
+    relativeUri = getTargetPath(relativePath, syncable, options)
+      .replace(join(options.srcDir, 'content'), '')
+      .replace(/\/(.*)\.md$/gi, '$1');
+  }
+
+  return `/${relativeUri}`;
 };
