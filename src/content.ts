@@ -68,7 +68,7 @@ export const getUrlForFile = (relativePath: string, syncable: Syncable, options:
   if (isMarkdown(relativePath)) {
     relativeUri = getTargetPath(relativePath, syncable, options)
       .replace(join(options.srcDir, 'content'), '')
-      .replace(/\/(.*)\.md$/gi, '$1');
+      .replace(new RegExp(`^\/(.*)${MARKDOWN_EXTENSIONS.join('|')}$`, 'gi'), '$1');
   }
 
   return `/${relativeUri}`;
