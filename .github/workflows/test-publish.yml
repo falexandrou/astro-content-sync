@@ -80,7 +80,7 @@ jobs:
         if: steps.check.outputs.version_changed == 'true'
         run: npm publish --access public --no-git-checks --registry=https://npm.pkg.github.com/
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create release
         env:
