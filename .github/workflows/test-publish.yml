@@ -79,9 +79,8 @@ jobs:
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          tag: v${{ steps.check.outputs.new_version }}
         run: |
-          gh release create "$tag" \
+          gh release create "v${{ steps.check.outputs.new_version }}" \
             --repo="$GITHUB_REPOSITORY" \
-            --title="$tag" \
+            --title="v${{ steps.check.outputs.new_version }}" \
             --generate-notes
