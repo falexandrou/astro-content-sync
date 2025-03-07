@@ -4,6 +4,14 @@
 Lately I've been enjoying the writing experience of [Obsidian](https://obsidian.md/) and I wanted to use it as my main writing tool.
 I also wanted to use Astro for my [personal website](https://www.falexandrou.com/), so I needed a way to sync the content from Obsidian to Astro.
 
+## What it does
+Astro Content Sync copies content between arbitrary paths and your astro installation when running `npm run dev`.
+This practically means that if you run `npm run dev` inside your Astro blog, you can use Obsidian as your content editor.
+
+- Syncs directories into your Astro blogs
+- Finds links inside your markdown content and replaces it with site links.
+- Copies images from Obsidian to Astro (taking care of the implicit "images" directory that Obsidian uses).
+
 ## Installation
 
 ```bash
