@@ -13,10 +13,13 @@ This practically means that if you run `npm run dev` inside your Astro blog, you
 - Copies images from Obsidian to Astro (taking care of the implicit "images" directory that Obsidian uses).
 
 ## Installation
+Run the following command inside your Astro installation
 
 ```bash
 npm install astro-content-sync
 ```
+
+You are now ready to configure the integration by modifying `astro.config.mjs` as shown below
 
 ## Configuration
 
