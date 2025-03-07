@@ -1,6 +1,6 @@
 {
   "name": "astro-content-sync",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "Syncs Obsidian directories with Astro's content directories",
   "main": "dist/index.js",
   "scripts": {

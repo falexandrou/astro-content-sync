@@ -1,4 +1,4 @@
-import chokidar from 'chokidar';
+import chokidar, { type FSWatcher } from 'chokidar';
 import { createAstroContentSyncIntegration } from "../src/integration";
 import { astroConfig } from "./fixtures";
 import * as syncableUtil from '../src/syncable';
@@ -8,7 +8,7 @@ describe('createAstroContentSyncIntegration', () => {
   const config = astroConfig;
   const integration = createAstroContentSyncIntegration();
   const logger = { info: jest.fn(), warn: jest.fn(), error: jest.fn() };
-  const { hooks: { ['astro:config:setup']: hook } } = integration;
+  const { hooks: { 'astro:config:setup': hook } } = integration;
 
   it('returns a valid object', () => {
     expect(integration).toStrictEqual({
@@ -37,7 +37,7 @@ describe('createAstroContentSyncIntegration', () => {
     const chokidarSpy = jest.spyOn(chokidar, 'watch').mockReturnValue({
       on: eventSpy,
       close: jest.fn(),
-    } as any);
+    } as unknown as FSWatcher);
 
     const source = 'src/content';
     const target = 'public/content';
@@ -55,9 +55,7 @@ describe('createAstroContentSyncIntegration', () => {
     expect(eventSpy).toHaveBeenCalledWith('add', expect.any(Function));
     expect(eventSpy).toHaveBeenCalledWith('change', expect.any(Function));
     expect(eventSpy).toHaveBeenCalledWith('unlink', expect.any(Function));
-
     expect(eventSpy).toHaveBeenCalledWith('addDir', expect.any(Function));
-    expect(eventSpy).toHaveBeenCalledWith('unlinkDir', expect.any(Function));
 
     syncables.mockReset();
   });

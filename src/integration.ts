@@ -1,5 +1,5 @@
 import chokidar, { type FSWatcher } from 'chokidar';
-import { getLinkedFilesInMarkdown, getTargetPath, getUrlForFile, isMarkdown } from './content';
+import { getLinkedFilesInMarkdown, getTargetPath, getUrlForFile, isImage, isMarkdown } from './content';
 import { copyFile, getFilesInDirectory, removeFile, resolveFilePath } from './filesystem';
 import { getSyncablesFromInputs, DEFAULT_ERROR_MESSAGE } from './syncable';
 import type { AstroOptions, ContentLink, Syncable } from './types';
@@ -65,19 +65,30 @@ export const createAstroContentSyncIntegration = (...inputs: (Syncable | string)
           const targetPath = getTargetPath(path, syncable, options);
           const linkUrls: ContentLink[] = [];
 
-          if (isMarkdown(path)) {
-            const linkedFiles = getLinkedFilesInMarkdown(path);
-
-            for (const linked of linkedFiles) {
-              const targetLinked = getTargetPath(linked, syncable, options);
-
-              linkUrls.push({ source: linked, url: getUrlForFile(linked, syncable, options) });
-              const sourcePath = resolveFilePath(linked, syncable.source);
-              copyFile(sourcePath, targetLinked);
-            }
+          if (!isMarkdown(path)) {
+            return;
           }
 
           copyFile(path, targetPath, linkUrls);
+
+          const linkedFiles = getLinkedFilesInMarkdown(path);
+
+          for (const linked of linkedFiles) {
+            const targetLinked = getTargetPath(linked, syncable, options);
+
+            linkUrls.push({ source: linked, url: getUrlForFile(linked, syncable, options) });
+
+            const sourcePath = isImage(linked)
+              ? resolveFilePath(linked, syncable.source)
+              : resolveFilePath(linked, syncable.source);
+
+            if (!sourcePath) {
+              logger.warn(`Could not resolve ${linked} mentioned in ${path}`);
+              continue;
+            }
+
+            copyFile(sourcePath, targetLinked);
+          }
 
           logger.info(`Copied ${path} to ${targetPath}`);
         };

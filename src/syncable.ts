@@ -2,7 +2,6 @@ import { existsSync } from 'node:fs';
 import { join as joinPath, delimiter as PATH_DELIMITER } from 'node:path';
 import { normalizePath } from './filesystem';
 import type { AstroOptions, Syncable } from "./types";
-import { isMarkdown } from './content';
 
 export const DEFAULT_ERROR_MESSAGE = 'Please provide at least one sync configuration or set the ASTRO_CONTENT_SYNC environment variable';
 export const SOURCE_PATH_EMPTY_MESSAGE = 'Source path is empty';
@@ -16,9 +15,7 @@ export const getNormalizedSyncable = (input: Syncable | string, options: AstroOp
   if (typeof input === 'string') {
     ([sourcePath, targetPath] = input.split(PATH_DELIMITER));
   } else {
-    sourcePath = input.source;
-    targetPath = input.target || joinPath(options.srcDir, 'content');
-    ignored = input.ignored || [];
+    ({ source: sourcePath, target: targetPath, ignored = [] } = input);
   }
 
   if (!sourcePath) {
@@ -28,7 +25,7 @@ export const getNormalizedSyncable = (input: Syncable | string, options: AstroOp
 
   return {
     source: normalizePath(sourcePath),
-    target: normalizePath(targetPath, options.rootDir),
+    target: normalizePath(targetPath ?? joinPath(options.srcDir, 'content', 'post'), options.rootDir),
     ignored
   };
 };

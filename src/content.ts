@@ -1,21 +1,15 @@
 import { readFileSync } from 'node:fs';
-import type { AstroOptions, ContentLink, Syncable } from './types';
 import { join } from 'node:path';
+import type { AstroOptions, ContentLink, Syncable } from './types';
+import { IMAGE_EXTENSIONS, MARKDOWN_EXTENSIONS } from './constants';
 
-const MARKDOWN_EXTENSIONS = [
-  '.md',
-  '.mkd',
-  '.mdwn',
-  '.mdown',
-  '.mdtxt',
-  '.mdtext',
-  '.markdown',
-  '.text',
-];
+export const isImage = (pathName: string) => {
+  return IMAGE_EXTENSIONS.some((ext) => pathName.endsWith(ext));
+}
 
-export const isMarkdown = (pathName: string) => (
-  MARKDOWN_EXTENSIONS.some((ext) => pathName.endsWith(ext))
-);
+export const isMarkdown = (pathName: string) => {
+  return MARKDOWN_EXTENSIONS.some((ext) => pathName.endsWith(ext))
+};
 
 const isRelativeLink = (path: string) => (
   !path.startsWith('http')
@@ -25,7 +19,8 @@ export const getLinkedFilesInMarkdown = (source: string) => {
   const contents = readFileSync(source, 'utf-8');
 
   // Regular expressions for markdown links & images
-  const mdLinkOrImageRegex = /!?\[([^\]]*)\]\(([^)]+)(\s[^)]+)?\)/g;
+  const mdImageRegex = /!\[\[([^\]]+)\]\]/g;
+  const mdLinkRegex = /!?\[([^\]]*)\]\(([^)]+)(\s?[^)]+)?\)/g;
 
   // Regular expressions for HTML elements with links/sources
   const htmlRegex = /<(?:a|img|video|audio|source|iframe)\s+[^>]*(?:href|src)=["']([^"']+)["'][^>]*>/gi;
@@ -33,7 +28,8 @@ export const getLinkedFilesInMarkdown = (source: string) => {
   let match: RegExpExecArray | null = null;
   const links = new Set<string>();
   const matchers: [RegExp, number][] = [
-    [mdLinkOrImageRegex, 2],
+    [mdLinkRegex, 2],
+    [mdImageRegex, 1],
     [htmlRegex, 1],
   ];
 
@@ -57,7 +53,7 @@ export const replaceContentLink = (content: string, link: ContentLink) => {
 export const getTargetPath = (path: string, syncable: Syncable, options: AstroOptions) => {
   const relativePath = path.replace(syncable.source, '').replace(/^\/?(.*)\/?$/gi, '$1');
 
-  return isMarkdown(path)
+  return isMarkdown(relativePath)
     ? join(syncable.target ?? options.rootDir, relativePath)
     : join(options.publicDir, relativePath);
 };

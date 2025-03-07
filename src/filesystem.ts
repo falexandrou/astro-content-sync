@@ -1,6 +1,7 @@
-import { join, dirname, isAbsolute } from 'node:path';
+import { join, dirname, isAbsolute, resolve } from 'node:path';
 import { statSync, mkdirSync, readdirSync, copyFileSync, unlinkSync, readFileSync, writeFileSync } from 'node:fs';
-import { isMarkdown, replaceContentLink } from './content';
+import { isImage, isMarkdown, replaceContentLink } from './content';
+import { OBSIDIAN_IMAGE_DIRS } from './constants';
 import type { ContentLink } from './types';
 
 export const normalizePath = (path: string, base = '') => (
@@ -61,7 +62,7 @@ export const removeFile = async (file: string) => {
   unlinkSync(file);
 };
 
-export const resolveFilePath = (fileName: string, baseDir = '') => {
+const resolveAbsolutePath = (fileName: string, baseDir = ''): string | null => {
   try {
     const stat = statSync(join(baseDir, fileName), { throwIfNoEntry: false });
 
@@ -69,9 +70,21 @@ export const resolveFilePath = (fileName: string, baseDir = '') => {
       return null;
     }
 
-    return normalizePath(fileName, baseDir);
+    return resolve(normalizePath(fileName, baseDir));
   } catch (err) {
     console.error(err);
     return null;
   }
+};
+
+export const resolveFilePath = (fileName: string, baseDir = ''): string | null => {
+  const resolved = resolveAbsolutePath(fileName, baseDir);
+
+  if (!isImage(fileName) || resolved) {
+    return resolved;
+  }
+
+  // We're looking for an image file that wasn't resolved, we need to attempt lookign into the obsidian image directories
+  const attempts = OBSIDIAN_IMAGE_DIRS.map(dirName => resolveAbsolutePath(fileName, join(baseDir, dirName)));
+  return attempts.find(Boolean) ?? null;
 };

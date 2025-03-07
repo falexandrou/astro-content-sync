@@ -10,32 +10,86 @@ I also wanted to use Astro for my [personal website](https://www.falexandrou.com
 npm install astro-content-sync
 ```
 
-### With Environment Variables
-
-```bash
-# Specifying just the source, will use Astro's default content directory
-ASTRO_CONTENT_SYNC='/home/user/my-content-source' npm astro dev
-
-# Specifying both source and destination
-ASTRO_CONTENT_SYNC='/home/user/my-content-source:./src/content' npm astro dev
-```
-
-### With Astro Config
+## Configuration
 
 ```js
-// astro.config.mjs
+// file: astro.config.mjs
 // ...
+
 // Import the plugin
 import { astroContentSync } from 'astro-content-sync';
-// ...
+
 // Add the plugin to the `plugins` array
 export default {
   // ...
   plugins: [
-    astroContentSync({
-      source: '/home/user/my-content-source', // or process.env.MY_CONTENT_SOURCE in a team environment
-      destination: './src/content'
-    })
+    astroContentSync( /* see below for options */ )
   ]
+}
+```
+
+### Default options
+
+By default, the files are copied to `src/content/blog` inside your Astro installation and it's used when the target path is not explicitly defined.
+
+### Example Configurations
+
+The `astroContentSync` function accepts either a list of strings specifying source & target paths, or a list of objects.
+
+```js
+// Copy files from /home/user/.obsidian/blog into Astro's `src/content/blog` directory
+plugins: [
+  astroContentSync('/home/obsidian/blog'),
+]
+
+// Copy files from multiple directories into `src/content/blog`
+plugins: [
+  astroContentSync('/home/obsidian/blog', '/home/obsidian/work', '/home/obsidian/portfolio'),
+]
+
+// Copy files into a specific folder, using a list of strings
+plugins: [
+  astroContentSync('/home/obsidian/blog:./src/content/posts'),
+]
+
+// Copy files into a specific folder, using an object
+plugins: [
+  astroContentSync({ source: '/home/obsidian/blog' }),
+]
+
+// Copy files into a specific folder, using an object specifying the target path
+plugins: [
+  astroContentSync({ source: '/home/obsidian/blog', target: 'src/content/blog' }),
+]
+
+// Copy files into a specific folder, using an object specifying a trasform function and an ignore list
+plugins: [
+  astroContentSync({ source: '/home/obsidian/blog', target: 'src/content/blog', ignore: [/* paths to ignore */], transform: (path) => path.replace(...) }),
+]
+```
+
+When adding the `astroContentSync` without any arguments into the configuration, it will try to resolve the soure path from the value of the `ASTRO_CONTENT_SYNC` environment variable.
+
+```bash
+# Go to your astro installation
+cd /home/sites/astro-blog
+
+# Copy files from /home/user/.obsidian/blog into Astro's `src/content/blog` directory
+ASTRO_CONTENT_SYNC="/home/user/.obsidian/blog" npm run dev
+
+# Copy files from multiple directories into `src/content/blog`
+ASTRO_CONTENT_SYNC="/home/user/.obsidian/blog,/home/user/.obsidian/portfolio" npm run dev
+
+# Specify target path via a colon
+ASTRO_CONTENT_SYNC="/home/user/.obsidian/blog:./src/content/my-custom-path" npm run dev
+```
+
+### Full Configuration object
+```js
+{
+  source: string;                         // The path to the directory that will be watched for changes
+  target?: string;                        // The path to the directory that the sourcePath will be synced to
+  ignored?: string[];                     // List of glob patterns to be ignored by the integration
+  transform?: (path: string) => string;   // Function to transform the path of the file before syncing
 }
 ```

@@ -47,7 +47,7 @@ describe('getSyncablesFromInputs', () => {
       expect(syncables[0]).toStrictEqual({
         ignored: [],
         source: mockDir,
-        target: `${astroOptions.srcDir}/content`,
+        target: `${astroOptions.srcDir}/content/post`,
       });
     });
 

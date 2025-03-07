@@ -16,12 +16,14 @@ describe('getLinkedFilesInMarkdown', () => {
   });
 
   it('returns the files linked in markdown content', () => {
-    const { getLinkedFilesInMarkdown } = require('../src/markdown');
+    const { getLinkedFilesInMarkdown } = require('../src/content');
 
-    const linkedFiles = getLinkedFilesInMarkdown('file.md');
-    expect(linkedFiles).toEqual([
-      `${process.cwd()}/image.png`,
-      `${process.cwd()}/link.md`,
-    ]);
+    const linkedFiles: string[] = getLinkedFilesInMarkdown('file.md');
+    expect(linkedFiles.sort()).toEqual([
+      './image.png',
+      './test.jpg',
+      './new-image.png',
+      './link.md',
+    ].sort());
   });
 });
