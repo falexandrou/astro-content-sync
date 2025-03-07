@@ -28,6 +28,10 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: test
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
     steps:
       - uses: actions/checkout@v2
         with:
@@ -66,20 +70,18 @@ jobs:
         run: npm run build
         if: steps.check.outputs.version_changed == 'true'
 
-      # - name: Publish
-      #   if: steps.check.outputs.version_changed == 'true'
-      #   run: npm publish --access public --no-git-checks
-      #   env:
-      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Tag release
+      - name: Publish to NPM
         if: steps.check.outputs.version_changed == 'true'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            github.rest.git.createRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: 'refs/tags/v${{ steps.check.outputs.new_version }}',
-                sha: context.sha
-            })
+        run: npm publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          tag: v${{ steps.check.outputs.new_version }}
+        run: |
+          gh release create "$tag" \
+            --repo="$GITHUB_REPOSITORY" \
+            --title="$tag" \
+            --generate-notes
