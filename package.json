@@ -1,13 +1,21 @@
 {
   "name": "astro-content-sync",
   "version": "1.0.5",
+  "homepage": "https://github.com/falexandrou/astro-content-sync",
+  "bugs": {
+    "url": "https://github.com/falexandrou/astro-content-sync/issues"
+  },
   "description": "Syncs Obsidian directories with Astro's content directories",
   "main": "dist/index.js",
   "scripts": {
     "build": "rimraf dist/* && tsc",
     "test": "jest"
   },
-  "author": "Fotis Alexandrou <hello@falexandrou.com>",
+  "author": {
+    "name": "Fotis Alexandrou",
+    "email": "hello@falexandrou.com",
+    "url": "https://falexandrou.com"
+  },
   "license": "MIT",
   "exports": {
     ".": {
