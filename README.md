@@ -13,10 +13,10 @@ This practically means that if you run `npm run dev` inside your Astro blog, you
 - Copies images from Obsidian to Astro (taking care of the implicit "images" directory that Obsidian uses).
 
 ## Installation
-Run the following command inside your Astro installation
+Run the following command inside your Astro installation to install the plugin into `devDependencies`
 
 ```bash
-npm install astro-content-sync
+npm install -D astro-content-sync
 ```
 
 You are now ready to configure the integration by modifying `astro.config.mjs` as shown below
@@ -28,12 +28,12 @@ You are now ready to configure the integration by modifying `astro.config.mjs` a
 // ...
 
 // Import the plugin
-import { astroContentSync } from 'astro-content-sync';
+import astroContentSync from 'astro-content-sync';
 
 // Add the plugin to the `plugins` array
-export default {
+export default defineConfig{
   // ...
-  plugins: [
+  integrations: [
     astroContentSync( /* see below for options */ )
   ]
 }
@@ -49,37 +49,38 @@ The `astroContentSync` function accepts either a list of strings specifying sour
 
 ```js
 // Copy files from /home/user/.obsidian/blog into Astro's `src/content/blog` directory
-plugins: [
+integrations: [
   astroContentSync('/home/obsidian/blog'),
 ]
 
 // Copy files from multiple directories into `src/content/blog`
-plugins: [
+integrations: [
   astroContentSync('/home/obsidian/blog', '/home/obsidian/work', '/home/obsidian/portfolio'),
 ]
 
 // Copy files into a specific folder, using a list of strings
-plugins: [
+integrations: [
   astroContentSync('/home/obsidian/blog:./src/content/posts'),
 ]
 
 // Copy files into a specific folder, using an object
-plugins: [
+integrations: [
   astroContentSync({ source: '/home/obsidian/blog' }),
 ]
 
 // Copy files into a specific folder, using an object specifying the target path
-plugins: [
+integrations: [
   astroContentSync({ source: '/home/obsidian/blog', target: 'src/content/blog' }),
 ]
 
 // Copy files into a specific folder, using an object specifying a trasform function and an ignore list
-plugins: [
+integrations: [
   astroContentSync({ source: '/home/obsidian/blog', target: 'src/content/blog', ignore: [/* paths to ignore */], transform: (path) => path.replace(...) }),
 ]
 ```
 
 When adding the `astroContentSync` without any arguments into the configuration, it will try to resolve the soure path from the value of the `ASTRO_CONTENT_SYNC` environment variable.
+Note: Environment variables don't work in configuration files, you'll need to load then explicitly as shown in [this guide](https://docs.astro.build/en/guides/environment-variables/#in-the-astro-config-file).
 
 ```bash
 # Go to your astro installation
