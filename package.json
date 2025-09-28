@@ -1,6 +1,6 @@
 {
   "name": "astro-content-sync",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "type": "module",
   "homepage": "https://github.com/falexandrou/astro-content-sync",
   "bugs": {
@@ -8,6 +8,9 @@
   },
   "description": "Syncs Obsidian directories with Astro's content directories",
   "main": "dist/index.js",
+  "files": [
+    "dist/"
+  ],
   "scripts": {
     "build": "rimraf dist/* && tsc",
     "test": "jest"
