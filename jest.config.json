@@ -1,0 +1,31 @@
+{
+  "preset": "ts-jest/presets/default-esm",
+  "testEnvironment": "node",
+  "moduleFileExtensions": [
+    "ts",
+    "js",
+    "json",
+    "node"
+  ],
+  "extensionsToTreatAsEsm": [".ts"],
+  "moduleDirectories": [
+    "src",
+    "node_modules"
+  ],
+  "moduleNameMapper": {
+    "^(\\.{1,2}/.*)\\.js$": "$1"
+  },
+  "transform": {
+    "^.+\\.ts$": [
+      "ts-jest",
+      {
+        "diagnostics": true,
+        "isolatedModules": true,
+        "useESM": true
+      }
+    ]
+  },
+  "transformIgnorePatterns": [
+    "node_modules/(?!mime/.*)"
+  ]
+}

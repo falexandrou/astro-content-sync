@@ -3,13 +3,16 @@
     "src/**/*.ts"
   ],
   "compilerOptions": {
-     "module": "ESNext",
-     "moduleResolution": "node",
+     "module": "nodenext",
+     "moduleResolution": "nodenext",
      "esModuleInterop": true,
-     "target": "esnext",
      "outDir": "dist",
      "rootDir": "src",
      "declaration": true,
-     "resolveJsonModule": true
+     "resolveJsonModule": true,
+     "target": "es2018",
+     "paths": {
+       "~/*": ["./src/*"]
+     }
   },
 }
