@@ -3,11 +3,13 @@
     "src/**/*.ts"
   ],
   "compilerOptions": {
-    "moduleResolution": "node",
-    "esModuleInterop": true,
-    "target": "esnext",
-    "outDir": "dist",
-    "declaration": true,
-    "rootDir": "src",
+     "module": "ESNext",
+     "moduleResolution": "node",
+     "esModuleInterop": true,
+     "target": "esnext",
+     "outDir": "dist",
+     "rootDir": "src",
+     "declaration": true,
+     "resolveJsonModule": true
   },
 }

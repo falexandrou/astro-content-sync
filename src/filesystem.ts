@@ -1,8 +1,8 @@
 import { join, dirname, isAbsolute, resolve } from 'node:path';
 import { statSync, mkdirSync, readdirSync, copyFileSync, unlinkSync, readFileSync, writeFileSync } from 'node:fs';
-import { isImage, isMarkdown, replaceContentLink } from './content';
-import { OBSIDIAN_IMAGE_DIRS } from './constants';
-import type { ContentLink } from './types';
+import { isImage, isMarkdown, replaceContentLink } from './content.js';
+import { OBSIDIAN_IMAGE_DIRS } from './constants.js';
+import type { ContentLink } from './types.d.ts';
 
 export const normalizePath = (path: string, base = '') => (
   isAbsolute(path) ? path : join(base, path)

@@ -1,8 +1,8 @@
 import chokidar, { type FSWatcher } from 'chokidar';
-import { getLinkedFilesInMarkdown, getTargetPath, getUrlForFile, isImage, isMarkdown } from './content';
-import { copyFile, getFilesInDirectory, removeFile, resolveFilePath } from './filesystem';
-import { getSyncablesFromInputs, DEFAULT_ERROR_MESSAGE } from './syncable';
-import type { AstroOptions, ContentLink, Syncable } from './types';
+import { getLinkedFilesInMarkdown, getTargetPath, getUrlForFile, isImage, isMarkdown } from './content.js';
+import { copyFile, getFilesInDirectory, removeFile, resolveFilePath } from './filesystem.js';
+import { getSyncablesFromInputs, DEFAULT_ERROR_MESSAGE } from './syncable.js';
+import type { AstroOptions, ContentLink, Syncable } from './types.d.ts';
 
 declare global {
   var watcher: FSWatcher;

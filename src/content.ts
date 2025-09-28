@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { AstroOptions, ContentLink, Syncable } from './types';
-import { IMAGE_EXTENSIONS, MARKDOWN_EXTENSIONS } from './constants';
+import type { AstroOptions, ContentLink, Syncable } from './types.d.ts';
+import { IMAGE_EXTENSIONS, MARKDOWN_EXTENSIONS } from './constants.js';
 
 export const isImage = (pathName: string) => {
   return IMAGE_EXTENSIONS.some((ext) => pathName.endsWith(ext));

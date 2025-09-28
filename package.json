@@ -1,6 +1,7 @@
 {
   "name": "astro-content-sync",
-  "version": "1.0.5",
+  "version": "1.1.0",
+  "type": "module",
   "homepage": "https://github.com/falexandrou/astro-content-sync",
   "bugs": {
     "url": "https://github.com/falexandrou/astro-content-sync/issues"
@@ -17,19 +18,6 @@
     "url": "https://falexandrou.com"
   },
   "license": "MIT",
-  "exports": {
-    ".": {
-      "types": "./src/types.ts",
-      "import": {
-        "development": "./src/index.ts",
-        "default": "./dist/index.cjs"
-      },
-      "require": {
-        "development": "./src/index.ts",
-        "default": "./dist/index.js"
-      }
-    }
-  },
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "@types/node": "^22.10.7",
