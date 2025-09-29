@@ -18,7 +18,7 @@ export const createAstroContentSyncIntegration = (...inputs: (Syncable | string)
   return {
     name: 'astro-content-sync',
     hooks: {
-      'astro:config:setup': ({ command, logger, config }) => {
+      'astro:config:setup': ({ command, logger, config }): void => {
         if (command !== 'dev') {
           logger.warn('AstroContentSync is only available in dev mode');
           return;
@@ -39,7 +39,7 @@ export const createAstroContentSyncIntegration = (...inputs: (Syncable | string)
 
         if (!syncables.length) {
           logger.error(DEFAULT_ERROR_MESSAGE);
-          return [];
+          return;
         }
 
         const watched: Map<string, Syncable> = new Map(syncables.map((dir) => [dir.source, dir]));
