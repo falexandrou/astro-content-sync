@@ -1,10 +1,12 @@
 ## Astro Content Sync
 
 ## The motivation
+
 Lately I've been enjoying the writing experience of [Obsidian](https://obsidian.md/) and I wanted to use it as my main writing tool.
 I also wanted to use Astro for my [personal website](https://www.falexandrou.com/), so I needed a way to sync the content from Obsidian to Astro.
 
 ## What it does
+
 Astro Content Sync copies content between arbitrary paths and your astro installation when running `npm run dev`.
 This practically means that if you run `npm run dev` inside your Astro blog, you can use Obsidian as your content editor.
 
@@ -13,10 +15,11 @@ This practically means that if you run `npm run dev` inside your Astro blog, you
 - Copies images from Obsidian to Astro (taking care of the implicit "images" directory that Obsidian uses).
 
 ## Installation
+
 Run the following command inside your Astro installation to install the plugin into `devDependencies`
 
 ```bash
-npm install -D astro-content-sync
+npm install astro-content-sync
 ```
 
 You are now ready to configure the integration by modifying `astro.config.mjs` as shown below
@@ -97,6 +100,7 @@ ASTRO_CONTENT_SYNC="/home/user/.obsidian/blog:./src/content/my-custom-path" npm 
 ```
 
 ### Full Configuration object
+
 ```js
 {
   source: string;                         // The path to the directory that will be watched for changes
