@@ -1,6 +1,6 @@
 import { join, dirname, isAbsolute, resolve } from 'node:path';
 import { statSync, mkdirSync, readdirSync, copyFileSync, unlinkSync, readFileSync, writeFileSync } from 'node:fs';
-import { isImage, isMarkdown, replaceContentLink } from './content.js';
+import { isImage, isMarkdown, replaceContentLinks } from './content.js';
 import { OBSIDIAN_IMAGE_DIRS } from './constants.js';
 import type { ContentLink } from './types.d.ts';
 
@@ -47,11 +47,7 @@ export const copyFile = async (source: string, destination: string, links: Conte
 
   if (isMarkdown(source)) {
     let content = readFileSync(source, 'utf-8').toString();
-
-    for (const link of links) {
-      content = replaceContentLink(content, link);
-    }
-
+    content = replaceContentLinks(content, links);
     writeFileSync(destination, content);
   } else {
     copyFileSync(source, destination);

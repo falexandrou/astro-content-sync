@@ -69,8 +69,6 @@ export const createAstroContentSyncIntegration = (...inputs: (Syncable | string)
             return;
           }
 
-          copyFile(path, targetPath, linkUrls);
-
           const linkedFiles = getLinkedFilesInMarkdown(path);
 
           for (const linked of linkedFiles) {
@@ -78,9 +76,7 @@ export const createAstroContentSyncIntegration = (...inputs: (Syncable | string)
 
             linkUrls.push({ source: linked, url: getUrlForFile(linked, syncable, options) });
 
-            const sourcePath = isImage(linked)
-              ? resolveFilePath(linked, syncable.source)
-              : resolveFilePath(linked, syncable.source);
+            const sourcePath = resolveFilePath(linked, syncable.source)
 
             if (!sourcePath) {
               logger.warn(`Could not resolve ${linked} mentioned in ${path}`);
@@ -89,6 +85,9 @@ export const createAstroContentSyncIntegration = (...inputs: (Syncable | string)
 
             copyFile(sourcePath, targetLinked);
           }
+
+          // Copy the markdown file with link replacements
+          copyFile(path, targetPath, linkUrls);
 
           logger.info(`Copied ${path} to ${targetPath}`);
         };

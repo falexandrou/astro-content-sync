@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import type { AstroOptions, ContentLink, Syncable } from './types.d.ts';
 import { IMAGE_EXTENSIONS, MARKDOWN_EXTENSIONS } from './constants.js';
 
@@ -50,6 +50,10 @@ export const replaceContentLink = (content: string, link: ContentLink) => {
   return content.replace(reg, link.url);
 };
 
+export const replaceContentLinks = (content: string, links: ContentLink[]) => {
+  return links.reduce((updatedContent, link) => replaceContentLink(updatedContent, link), content);
+};
+
 export const getTargetPath = (path: string, syncable: Syncable, options: AstroOptions) => {
   const relativePath = path.replace(syncable.source, '').replace(/^\/?(.*)\/?$/gi, '$1');
 
@@ -67,5 +71,5 @@ export const getUrlForFile = (relativePath: string, syncable: Syncable, options:
       .replace(new RegExp(`^\/(.*)${MARKDOWN_EXTENSIONS.join('|')}$`, 'gi'), '$1');
   }
 
-  return `/${relativeUri}`;
+  return relativeUri.startsWith('/') ? relativeUri : `/${relativeUri}`;
 };
