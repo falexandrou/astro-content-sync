@@ -1,6 +1,6 @@
 {
   "name": "astro-content-sync",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "type": "module",
   "homepage": "https://github.com/falexandrou/astro-content-sync",
   "bugs": {
@@ -11,6 +11,13 @@
   },
   "description": "Syncs Obsidian directories with Astro's content directories",
   "main": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "development": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "files": [
     "dist/"
   ],
@@ -22,9 +29,6 @@
     "name": "Fotis Alexandrou",
     "email": "hello@falexandrou.dev",
     "url": "https://falexandrou.dev"
-  },
-  "exports": {
-    ".": "./src/index.ts"
   },
   "license": "MIT",
   "devDependencies": {
