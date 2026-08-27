@@ -6,6 +6,9 @@
   "bugs": {
     "url": "https://github.com/falexandrou/astro-content-sync/issues"
   },
+  "repository": {
+    "url": "https://github.com/falexandrou/astro-content-sync"
+  },
   "description": "Syncs Obsidian directories with Astro's content directories",
   "main": "dist/index.js",
   "files": [
