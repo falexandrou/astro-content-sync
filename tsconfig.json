@@ -11,6 +11,7 @@
      "declaration": true,
      "resolveJsonModule": true,
      "target": "es2018",
+     "types": ["node"],
      "paths": {
        "~/*": ["./src/*"]
      }

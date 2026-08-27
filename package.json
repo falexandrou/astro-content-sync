@@ -1,6 +1,6 @@
 {
   "name": "astro-content-sync",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "type": "module",
   "homepage": "https://github.com/falexandrou/astro-content-sync",
   "bugs": {
@@ -17,13 +17,16 @@
   },
   "author": {
     "name": "Fotis Alexandrou",
-    "email": "hello@falexandrou.com",
-    "url": "https://falexandrou.com"
+    "email": "hello@falexandrou.dev",
+    "url": "https://falexandrou.dev"
+  },
+  "exports": {
+    ".": "./src/index.ts"
   },
   "license": "MIT",
   "devDependencies": {
     "@types/jest": "^29.5.14",
-    "@types/node": "^22.10.7",
+    "@types/node": "^22.20.1",
     "jest": "^29.7.0",
     "rimraf": "^6.0.1",
     "ts-jest": "^29.2.5",

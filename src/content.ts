@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join, isAbsolute } from 'node:path';
 import type { AstroOptions, ContentLink, Syncable } from './types.d.ts';
 import { IMAGE_EXTENSIONS, MARKDOWN_EXTENSIONS } from './constants.js';
 
@@ -12,7 +12,7 @@ export const isMarkdown = (pathName: string) => {
 };
 
 const isRelativeLink = (path: string) => (
-  !path.startsWith('http')
+  !path.startsWith('http') && !isAbsolute(path)
 );
 
 export const getLinkedFilesInMarkdown = (source: string) => {
